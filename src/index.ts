@@ -1,11 +1,13 @@
 import express from "express";
 
+import { env } from "./config/env";
+import { healthRouter } from "./routes/health";
+import { queryRouter } from "./routes/query";
+
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+app.use(express.json());
+app.use("/health", healthRouter);
+app.use("/query", queryRouter);
 
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
-});
-
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+app.listen(env.port, () => console.log(`Listening on ${env.port}`));
