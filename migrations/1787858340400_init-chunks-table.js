@@ -1,18 +1,18 @@
-/**
- * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
- */
-export const shorthands = undefined;
+exports.up = (pgm) => {
+  pgm.sql(`CREATE EXTENSION IF NOT EXISTS vector;`);
+  pgm.sql(`
+    CREATE TABLE chunks (
+      id SERIAL PRIMARY KEY,
+      file_path TEXT NOT NULL,
+      content TEXT NOT NULL,
+      start_line INT,
+      end_line INT,
+      embedding vector(384) NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+  `);
+};
 
-/**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
- * @param run {() => void | undefined}
- * @returns {Promise<void> | void}
- */
-export const up = (pgm) => {};
-
-/**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
- * @param run {() => void | undefined}
- * @returns {Promise<void> | void}
- */
-export const down = (pgm) => {};
+exports.down = (pgm) => {
+  pgm.sql(`DROP TABLE chunks;`);
+};
