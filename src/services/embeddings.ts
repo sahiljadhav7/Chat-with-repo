@@ -1,3 +1,7 @@
+/**
+ * This file contains the embedding service that uses the Hugging Face API to generate embeddings for text.
+ */
+
 import { env } from "../config/env";
 
 const HF_MODEL = "sentence-transformers/all-MiniLM-L6-v2";
@@ -8,7 +12,7 @@ export async function embed(text: string): Promise<number[]> {
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${env.HF_API_TOKEN}`,
+        Authorization: `Bearer ${env.HF_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ inputs: text, options: { wait_for_model: true } }),
