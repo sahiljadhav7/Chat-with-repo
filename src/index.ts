@@ -10,4 +10,4 @@ app.use(express.json());
 app.use("/health", healthRouter);
 app.use("/query", queryRouter);
 
-app.listen(env.port, () => console.log(`Listening on ${env.port}`));
+app.listen(env.PORT, () => console.log(`Listening on ${env.PORT}`));
