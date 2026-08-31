@@ -2,28 +2,19 @@
  * This file contains the embedding service that uses the Hugging Face API to generate embeddings for text.
  */
 
+import { InferenceClient } from "@huggingface/inference";
 import { env } from "../config/env";
+
+const client = new InferenceClient(env.HF_API_KEY);
 
 const HF_MODEL = "sentence-transformers/all-MiniLM-L6-v2";
 
 export async function embed(text: string): Promise<number[]> {
-  const res = await fetch(
-    `https://api-inference.huggingface.co/pipeline/feature-extraction/${HF_MODEL}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${env.HF_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ inputs: text, options: { wait_for_model: true } }),
-    },
-  );
+  const result = await client.featureExtraction({
+    model: HF_MODEL,
+    inputs: text,
+    provider: "hf-inference",
+  });
 
-  if (!res.ok) {
-    throw new Error(
-      `Embedding request failed: ${res.status} ${await res.text()}`,
-    );
-  }
-
-  return res.json() as Promise<number[]>;
+  return result as number[];
 }
