@@ -7,11 +7,12 @@ export const queryRouter = Router();
 
 queryRouter.post("/", async (req, res) => {
   try {
-    const { question } = req.body;
+    const { question, repoId } = req.body;
     if (!question)
       return res.status(400).json({ error: "question is required" });
+    if (!repoId) return res.status(400).json({ error: "repoId is required" });
 
-    const chunks = await retrieveChunks(question);
+    const chunks = await retrieveChunks(question, repoId);
     const context = chunks
       .map((c) => `// ${c.file_path}\n${c.content}`)
       .join("\n\n---\n\n");

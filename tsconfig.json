@@ -7,5 +7,7 @@
     "strict": true,
     "esModuleInterop": true,
     "verbatimModuleSyntax": false
-  }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "test-folder"]
 }

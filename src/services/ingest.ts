@@ -5,7 +5,26 @@ import { chunkText } from "./chunking";
 import { embed } from "./embeddings";
 import { logger } from "../logger";
 
-const SKIP_DIRS = new Set(["node_modules", ".git", "dist"]);
+const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build", "vendor"]);
+const CODE_EXTENSIONS = new Set([
+  ".ts",
+  ".tsx",
+  ".js",
+  ".jsx",
+  ".py",
+  ".go",
+  ".rb",
+  ".java",
+  ".c",
+  ".cpp",
+  ".h",
+  ".hpp",
+  ".cs",
+  ".php",
+  ".rs",
+  ".md",
+]);
+const MAX_FILE_SIZE_BYTES = 500_000;
 
 function walk(dir: string): string[] {
   let results: string[] = [];
@@ -18,21 +37,30 @@ function walk(dir: string): string[] {
   return results;
 }
 
-export async function ingestFolder(folderPath: string) {
-  const files = walk(folderPath);
-  logger.info(`Found ${files.length} files to ingest`);
+function shouldIndexFile(filePath: string): boolean {
+  if (!CODE_EXTENSIONS.has(path.extname(filePath))) return false;
+  return fs.statSync(filePath).size <= MAX_FILE_SIZE_BYTES;
+}
+
+export async function ingestFolder(folderPath: string, repoId: number) {
+  const files = walk(folderPath).filter(shouldIndexFile);
+  logger.info(`Found ${files.length} indexable files`);
 
   for (const file of files) {
     const content = fs.readFileSync(file, "utf-8");
     const chunks = chunkText(content);
+    const relativePath = path.relative(folderPath, file);
 
     for (const chunk of chunks) {
       const vector = await embed(chunk.content);
+
       await pool.query(
-        `INSERT INTO chunks (file_path, content, start_line, end_line, embedding)
-         VALUES ($1, $2, $3, $4, $5)`,
+        `INSERT INTO chunks
+       (repo_id, file_path, content, start_line, end_line, embedding)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
         [
-          file,
+          repoId,
+          relativePath,
           chunk.content,
           chunk.startLine,
           chunk.endLine,
@@ -40,6 +68,7 @@ export async function ingestFolder(folderPath: string) {
         ],
       );
     }
-    logger.info(`Ingested ${chunks.length} chunks from ${file}`);
+
+    logger.info(`Finished ingesting ${relativePath}`);
   }
 }
