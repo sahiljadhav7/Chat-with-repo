@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { pool } from "../db/pool";
-import { chunkText } from "./chunking";
+import { chunkFile } from "./chunking";
 import { embed } from "./embeddings";
 import { logger } from "../logger";
 
@@ -48,7 +48,7 @@ export async function ingestFolder(folderPath: string, repoId: number) {
 
   for (const file of files) {
     const content = fs.readFileSync(file, "utf-8");
-    const chunks = chunkText(content);
+    const chunks = chunkFile(file, content);
     const relativePath = path.relative(folderPath, file);
 
     for (const chunk of chunks) {

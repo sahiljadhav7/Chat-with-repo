@@ -19,11 +19,17 @@ export async function generateAnswer(
     },
     body: JSON.stringify({
       model: env.LLM_MODEL,
+      max_tokens: 200,
       messages: [
         {
           role: "system",
-          content:
-            "You are a helpful assistant that answers questions based on the provided context. If the question is not related to the context, politely respond that you don't know.",
+          content: `Answer the question using only the provided context. If the context doesn't contain the answer, say so.
+
+          Respond in plain prose only — no markdown tables, no headers, no bold text, no bullet lists, no code blocks unless explicitly asked to show code. Maximum 3 sentences. Do not explain the full pipeline end-to-end unless specifically asked to "walk through" or "explain in detail" — just answer the direct question.
+
+          Example:
+          Question: "how does logging work here?"
+          Answer: "Logging goes through the logger in src/logger.ts, which wraps pino. Every service imports it and calls logger.info or logger.error instead of console.log for structured, filterable output."`,
         },
         {
           role: "user",
@@ -38,5 +44,7 @@ export async function generateAnswer(
   }
 
   const data = await res.json();
-  return data.choices[0].message.content;
+  const rawAnswer = data.choices[0].message.content;
+  const cleanAnswer = rawAnswer.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+  return cleanAnswer;
 }

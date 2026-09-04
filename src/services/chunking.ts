@@ -1,5 +1,4 @@
 import Parser from "tree-sitter";
-import TypeScript from "tree-sitter-typescript";
 import JavaScript from "tree-sitter-javascript";
 import Python from "tree-sitter-python";
 import path from "path";
@@ -11,8 +10,6 @@ export interface Chunk {
 }
 
 const LANGUAGE_BY_EXT: Record<string, any> = {
-  ".ts": TypeScript,
-  ".tsx": TypeScript,
   ".js": JavaScript,
   ".jsx": JavaScript,
   ".py": Python,
